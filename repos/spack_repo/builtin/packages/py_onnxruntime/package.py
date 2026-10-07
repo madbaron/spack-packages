@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack_repo.builtin.build_systems.cmake import CMakePackage, generator
+from spack_repo.builtin.build_systems.cmake import CMakeBuilder, CMakePackage, generator
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonExtension, PythonPipBuilder
 from spack_repo.builtin.build_systems.rocm import ROCmPackage
@@ -235,9 +235,8 @@ class PyOnnxruntime(CMakePackage, PythonExtension, ROCmPackage, CudaPackage):
                     define("CMAKE_TRY_COMPILE_PLATFORM_VARIABLES", "CMAKE_CUDA_RUNTIME_LIBRARY"),
                 )
             )
-            cuda_arch = self.spec.variants["cuda_arch"].value
-            if cuda_arch[0] != "none":
-                args.append(define("CMAKE_CUDA_ARCHITECTURES", cuda_arch))
+            if not self.spec.satisfies("cuda_arch=none"):
+                args.append(CMakeBuilder.define_cuda_architectures(self))
 
         if self.spec.satisfies("^cmake@3.24:"):
             args.append("--compile-no-warning-as-error")
